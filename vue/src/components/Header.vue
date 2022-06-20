@@ -18,7 +18,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav" style="flex-grow: 1;">
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <RouterLink class="nav-link active" to="/">Acceuil</RouterLink>
                     </li>
                     <li class="nav-item">
@@ -38,7 +38,7 @@
                     </li>
                     <li class="nav-item" v-if="user">
                         <button class="btn btn-danger" @click="deconnexion()">Déconnexion</button>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
         </div>
