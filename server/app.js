@@ -59,67 +59,69 @@ function authenticationToken(req, res, next){
 }
 
 // Routes Taches
-// app.get('/task', async (req, res) => {
-//     const taches = await Task.find();
-//     res.status(200).send(taches);
-// });
-// app.get('/task/:id', async (req, res) => {
-//     const tache = await Task.findOne({id: parseInt(req.params.id)});
-//     if (!tache) {
-//         throw new Error('Aucune tache trouvée');
-//     }
-//     res.status(200).send(tache);
-// });
+app.get('/task', async (req, res) => {
+    const taches = await Task.find().lean();
+    console.log(taches);
+    res.status(200).send(taches);
+});
+app.get('/task/:id', async (req, res) => {
+    const tache = await Task.findOne({id: parseInt(req.params.id)});
+    if (!tache) {
+        throw new Error('Aucune tache trouvée');
+    }
+    res.status(200).send(tache);
+});
 
-// app.post('/task', [authenticationToken], async (req, res) => {
-//     const payload = req.body;
-//     const scheme = Joi.object({
-//         id: Joi.allow(),
-//         description: Joi.string().max(255).required(),
-//         faite: Joi.boolean().required()
-//     });
-//     const {value, error} = scheme.validate(payload);
-//     if (error) {
-//         throw new Error(error.details[0].message);
-//     }
-//     value.creePar = req.user.id;
-//     const task = new Task(value);
-//     await task.save();
-//     res.status(201).send(value);
-// });
-// app.put('/task/:id', [authenticationToken], async (req, res) => {
-//     if (parseInt(req.params.id) === NaN) {
-//         throw new Error("Ceci n'est pas une clé valable");
-//     }
-//     const payload = req.body;
-//     const scheme = Joi.object({
-//         description: Joi.string().max(255).required(),
-//         faite: Joi.boolean().required()
-//     });
-//     const {value, error} = scheme.validate(payload);
-//     if (error) {
-//         throw new Error(error.details[0].message);
-//     }
-//     const tache = await Task.findOne({id: parseInt(req.params.id)});
-//     tache.description = payload.description;
-//     tache.faite = payload.faite;
-//     const modified = await tache.save();
+app.post('/task', [authenticationToken], async (req, res) => {
+    const payload = req.body;
+    const scheme = Joi.object({
+        id: Joi.allow(),
+        description: Joi.string().max(255).required(),
+        faite: Joi.boolean().required()
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    value.creePar = req.user.id;
+    const task = new Task(value);
+    await task.save();
+    res.status(201).send(value);
+});
 
-//     res.status(200).send(modified);
-// });
+app.put('/task/:id', [authenticationToken], async (req, res) => {
+    if (parseInt(req.params.id) === NaN) {
+        throw new Error("Ceci n'est pas une clé valable");
+    }
+    const payload = req.body;
+    const scheme = Joi.object({
+        description: Joi.string().max(255).required(),
+        faite: Joi.boolean().required()
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    const tache = await Task.findOne({id: parseInt(req.params.id)});
+    tache.description = payload.description;
+    tache.faite = payload.faite;
+    const modified = await tache.save();
 
-// app.delete('/task/:id', [authenticationToken], async (req, res) => {
-//     if (parseInt(req.params.id) === NaN) {
-//         throw new Error("Ceci n'est pas une clé valable");
-//     }
+    res.status(200).send(modified);
+});
 
-//     const tache = await Task.findOne({id: parseInt(req.params.id)});
-//     if (parseInt(req.user.id) !== parseInt(tache.creePar)) {
-//         throw new Error("Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
-//     }
-//     await Task.deleteOne({id: parseInt(req.params.id)})
-//     res.status(200).send("Ressources supprimée");
-// });
+app.delete('/task/:id', [authenticationToken], async (req, res) => {
+    if (parseInt(req.params.id) === NaN) {
+        throw new Error("Ceci n'est pas une clé valable");
+    }
+
+    const tache = await Task.findOne({id: parseInt(req.params.id)});
+    if (parseInt(req.user.id) !== parseInt(tache.creePar)) {
+        throw new Error("Vous ne pouvez pas supprimer la tâche d'un autre utilisateur");
+    }
+    await Task.deleteOne({id: parseInt(req.params.id)})
+    res.status(200).send("Ressources supprimée");
+});
 
 // Route Login - Register
 app.post('/register', async (req, res) => {
@@ -173,6 +175,23 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({id: user._id}, process.env.SECRET_KEY);
     res.header('x-auth-token', token).status(200).send({"user": user});
+});
+
+app.post('/moncompte', async (req, res) => {
+    const payload = req.body;
+    const scheme = Joi.object({
+        email: Joi.string().max(255).email().required(),
+    });
+    const {value, error} = scheme.validate(payload);
+    if (error) {
+        throw new Error(error.details[0].message);
+    }
+    const user = await User.findOne({email: value.email});
+
+    if (!user) {
+        throw new Error("Ce compte n'existe pas");
+    }
+    res.status(200).send({"user": user});
 });
 
 // Middleware d'erreur 400
